@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map Generator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      form {
+        width: 100%;
+        margin: 20px;
+      }
+      #results {
+        display: flex;
+        justify-content: space-around;
+        width: 100%;
+        max-width: 1600px;
+      }
+      .result {
+        text-align: center;
+        margin: 10px;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Generate AO and Normal Maps</h1>
+    <div id="inputs">
+      <form id="uploadForm">
+        <input
+          type="text"
+          id="imageUrl"
+          placeholder="Enter Image URL"
+          required
+        />
+        <button type="submit">Generate Maps</button>
+      </form>
+      <div id="results">
+        <div id="previewContainer">
+          <h2>Image Preview</h2>
+          <img id="imagePreview" alt="Image Preview" />
+        </div>
+        <div class="result">
+          <h2>Normal Map</h2>
+          <img id="normalMap" alt="Normal Map" />
+        </div>
+        <div class="result">
+          <h2>AO Map</h2>
+          <img id="aoMap" alt="AO Map" />
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const defaultImageUrl =
+        "https://images.rugs.com/yellow-runner-lattice-frieze-rug/3146541/3146541_main.jpg";
+
+      const imageUrlInput = document.getElementById("imageUrl");
+      const imagePreview = document.getElementById("imagePreview");
+
+      // Set default image URL
+      imageUrlInput.value = defaultImageUrl;
+      imagePreview.src = defaultImageUrl;
+
+      imageUrlInput.addEventListener("input", function () {
+        const url = imageUrlInput.value;
+        imagePreview.src = url;
+      });
+
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+          const imageUrl = imageUrlInput.value;
+
+          try {
+            // Fetch Normal Map
+            const normalResponse = await fetch(
+              "http://localhost:3000/api/generate",
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  imageUrl: imageUrl,
+                  mapType: "normal",
+                }),
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+            const normalData = await normalResponse.json();
+            document.getElementById("normalMap").src = normalData.map;
+
+            // Fetch AO Map
+            const aoResponse = await fetch(
+              "http://localhost:3000/api/generate",
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  imageUrl: imageUrl,
+                  mapType: "ao",
+                }),
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+            const aoData = await aoResponse.json();
+            document.getElementById("aoMap").src = aoData.map;
+          } catch (error) {
+            console.error("Error generating maps:", error);
+          }
+        });
+    </script>
+  </body>
+</html>
